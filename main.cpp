@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+inline int Input_int();
 float vector_dot_product(float*, float*, int);
 
 int main()
