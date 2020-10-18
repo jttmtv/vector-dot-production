@@ -17,7 +17,7 @@ float simd_dot(const float* x, const float* y, const int& len) {
 
 	// 刚才只是处理了前4的倍数个元素的点乘，如果len不是4的倍数，那么还有个小尾巴要处理一下
 	for (; i < len; ++i) {
-		inner_prod += x[i] * y[i];//继续累加小尾巴的乘积
+		inner_prod += x[i] * y[i];//继续累加尾部的乘积
 	}
-	return inner_prod;//大功告成
+	return inner_prod;
 }
