@@ -29,7 +29,7 @@ int main()
 }
 
 float vector_dot_product(float* v1, float* v2, int n) {
-	float sum = 0;
+	float sum = 0.0f;
 	for (int i = 0; i < n; i++){
 		sum += v1[i] * v2[i];
 	}
