@@ -15,7 +15,7 @@ float simd_dot(const float* x, const float* y, const int& len) {
 	_mm_storeu_ps(&temp[0], acc); // 将acc中的4个32位的数据加载进内存
 	inner_prod = temp[0] + temp[1] + temp[2] + temp[3];//点乘求和
 
-	// 刚才只是处理了前4的倍数个元素的点乘，如果len不是4的倍数，那么还有个小尾巴要处理一下
+	// 刚才只是处理了前4的倍数个元素的点乘，如果len不是4的倍数，那么还有尾部要处理
 	for (; i < len; ++i) {
 		inner_prod += x[i] * y[i];//继续累加尾部的乘积
 	}
