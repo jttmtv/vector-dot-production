@@ -1,21 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-inline int Input_int();
-float vector_dot_product(float*, float*, int);
+inline size_t Input_int();
+inline float vector_dot_product(float*, float*, size_t);
 
 int main()
 {
 	float res;
 	srand((unsigned)time(NULL));
-	int n;
+	size_t n;
 	n = Input_int();
 	float* vec1 = new float[n];
 	float* vec2 = new float[n];
-	for (int i = 0; i < n; i++){
+	for (size_t i = 0; i < n; i++) {
 		vec1[i] = rand() / float(RAND_MAX);
 	}
-	for (int i = 0; i < n; i++){
+	for (size_t i = 0; i < n; i++) {
 		vec2[i] = rand() / float(RAND_MAX);
 	}
 	clock_t start, end;
@@ -23,21 +23,21 @@ int main()
 	res = vector_dot_product(vec1, vec2, n);
 	end = clock();
 	printf("%f\n", res);
-	printf("total time = %fms\n", (float)(end - start) * 1000 / CLOCKS_PER_SEC);	
+	printf("total time = %fms\n", (float)(end - start) * 1000 / CLOCKS_PER_SEC);
 	delete[] vec1;
 	delete[] vec2;
 	return 0;
 }
 
-float vector_dot_product(float* v1, float* v2, int n) {
+inline float vector_dot_product(float* v1, float* v2, size_t n) {
 	float sum = 0.0f;
-	for (int i = 0; i < n; i++){
+	for (size_t i = 0; i < n; i++) {
 		sum += v1[i] * v2[i];
 	}
 	return sum;
 }
 
-inline int Input_int()
+inline size_t Input_int()
 {
 	string x;
 	getline(cin, x);
