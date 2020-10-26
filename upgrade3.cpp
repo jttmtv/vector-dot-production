@@ -13,24 +13,24 @@ __global__ void dot(float *a, float *b, float *c) {
     __shared__ float cache[threadsPerBlock];
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     int cacheIndex = threadIdx.x;
-    /*通过线程块索引和线程索引计算出输入数组中的一个全局偏移tid。共享内存缓存中的偏移cacheIndex
-    就等于线程索引.线程块索引与这个偏移无关，因为每个线程块都拥有该共享内存的私有副本*/
+    /*Calculate a global offset tid in the input array through the thread block index and the thread index. The offset cacheIndex in the shared memory cache is equal to the thread index. 
+    The thread block index has nothing to do with this offset, because each thread block has a private copy of the shared memory*/
 
     float temp = 0;
-    while (tid < N) {/*防止索引越过数组边界*/
+    while (tid < N) {/*Prevent indexes from crossing array boundaries*/
         temp += a[tid] * b[tid];
-        /*在每个线程计算完当前索引上的任务后，接着就需要对索引进行递增，其中递增的步长为线程格中正在运行
-        的线程数量。这个数值等于每个线程块中的线程数量乘以线程中线程块的数量。*/
+        /*After each thread calculates the task on the current index, it then needs to increment the index, where the increment step is the thread running in the grid
+         The number of threads. This value is equal to the number of threads in each thread block multiplied by the number of thread blocks in the thread.*/
         tid += blockDim.x * gridDim.x;
     }
 
-    /*设置cache中相应位置上的值。*/
+    /*Set the value at the corresponding position in the cache.*/
     cache[cacheIndex] = temp;
 
-    /*对线程块中的线程进行同步。确保所有对共享数组cache[]的写入操作在读取cache之前完成。*/
+    /*Synchronize the threads in the thread block. Ensure that all write operations to the shared array cache[] are completed before reading the cache.*/
     __syncthreads();
 
-    //对于归约运算来说，以下代码要求threadPerBlock必须是2的指数
+    //For the reduction operation, the following code requires threadPerBlock to be an exponent of 2
     int i = blockDim.x / 2;
     while (i != 0){
         if (cacheIndex < i)
@@ -41,46 +41,46 @@ __global__ void dot(float *a, float *b, float *c) {
     }
     if (cacheIndex == 0)
         c[blockIdx.x] = cache[0];
-    /*在结束了while循环后，每个线程块都得到了一个值，这个值位于cache[]的第一个元素中。因为只有一个值
-    写入到全局内存，因此只需要一个线程来执行这个操作。当然，每个线程都可以执行这个写入操作，但这么做将
-    使得在写入单个值时带来不必要的内存通信量。为了简单，选择了索引为0的线程。最后，由于每个线程块都
-    只写入一个值到全局数据c[]中，因此可以通过blockIdx来索引这个值。*/
+    /*After the while loop is finished, each thread block gets a value, which is located in the first element of cache[]. Because there is only one value
+     Write to global memory, so only one thread is needed to perform this operation. Of course, each thread can perform this write operation, but doing so will
+     Makes unnecessary memory traffic when writing a single value. For simplicity, the thread with index 0 is selected. Finally, since each thread block is
+     Only write a value to the global data c[], so this value can be indexed by blockIdx.*/
 }
 
-int main(void){
+int main(){
     float *a, *b, c, *partial_c;
     float *dev_a, *dev_b, *dev_partial_c;
 
-    //初始化随机数种子
+    //Initialize random number seed
     srand((unsigned)time(NULL));
 
-    //在CPU上分配内存
+    //Allocate memory on the CPU
     a = (float *)malloc(N*sizeof(float));
     b = (float *)malloc(N*sizeof(float));
     partial_c = (float *)malloc(blocksPerGrid*sizeof(float));
 
-    //在GPU上分配内存
+    //Allocate memory on the GPU
     HANDLE_ERROR(cudaMalloc((void**)&dev_a, N * sizeof(float)));
     HANDLE_ERROR(cudaMalloc((void**)&dev_b, N * sizeof(float)));
     HANDLE_ERROR(cudaMalloc((void**)&dev_partial_c, blocksPerGrid * sizeof(float)));
 
-    //填充主机内存
+    //Fill host memory
     for (int i = 0; i < N; i++){
 		vec1[i] = rand() / float(RAND_MAX);
     vec2[i] = rand() / float(RAND_MAX);
 	}
 
-    //将数组'a'和'b'复制到GPU
+    //Copy the arrays'a' and'b' to the GPU
     HANDLE_ERROR(cudaMemcpy(dev_a, a, N*sizeof(float), cudaMemcpyHostToDevice));
     HANDLE_ERROR(cudaMemcpy(dev_b, b, N*sizeof(float), cudaMemcpyHostToDevice));
     dot << <blocksPerGrid, threadsPerBlock >> >(dev_a, dev_b, dev_partial_c);
 
-    //将数组'c'从GPU复制到CPU
+    //Copy array'c' from GPU to CPU
     HANDLE_ERROR(cudaMemcpy(partial_c, dev_partial_c, blocksPerGrid * sizeof(float),
         cudaMemcpyDeviceToHost));
 
-    //在CPU上完成最终的求和运算
-    c = 0;
+    //Complete the final summation operation on the CPU
+    c = 0.0f;
     for (int i = 0; i < blocksPerGrid; i++){
         c += partial_c[i];
     }
@@ -88,12 +88,12 @@ int main(void){
 #define sum_squares(x) (x*(x+1)*(2*x+1)/6)
     printf("Does GPU value %.6g = %.6g?\n", c, 2 * sum_squares((float)(N - 1)));
 
-    //释放GPU上的内存
+    //Free up memory on the GPU
     cudaFree(dev_a);
     cudaFree(dev_b);
     cudaFree(dev_partial_c);
 
-    //释放CPU上的内存
+    //Free up memory on the CPU
     free(a);
     free(b);
     free(partial_c);
