@@ -1,15 +1,21 @@
-float vector_dot_product(float* v1, float* v2, int n) {
-	float sum1 = 0.0f, sum2 = 0.0f;
+inline float vector_dot_product(float* v1, float* v2, int n)
+{
+	float sum = 0.0f;
 	int a, b;
-	a = n % 4;
-	b = (n - a) / 4;
-	for (int i = 0; i < b; i++) {
-		for (int j = i * 4; j < i * 4 + 4; j++)
-			sum1 += v1[j] * v2[j];
-		sum2 += sum1;
-		sum1 = 0.0f;
+	a = n % 8;
+	b = (n - a) / 8;
+	for (size_t i = 0; i < n; i += 8)
+	{
+		sum += (v1[i] * v2[i]);
+		sum += (v1[i + 1] * v2[i + 1]);
+		sum += (v1[i + 2] * v2[i + 2]);
+		sum += (v1[i + 3] * v2[i + 3]);
+		sum += (v1[i + 4] * v2[i + 4]);
+		sum += (v1[i + 5] * v2[i + 5]);
+		sum += (v1[i + 6] * v2[i + 6]);
+		sum += (v1[i + 7] * v2[i + 7]);
 	}
 	for (int i = n - 1; i > n - 1 - a; i--)
-		sum2 += v1[i] * v2[i];
-	return sum2;
+		sum += v1[i] * v2[i];
+	return sum;
 }
